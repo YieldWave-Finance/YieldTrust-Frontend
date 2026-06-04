@@ -1,4 +1,4 @@
-name: Grant Dashboard Build
+name: AgriTrust Frontend Build
 
 on:
   push:
