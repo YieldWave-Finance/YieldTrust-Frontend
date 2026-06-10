@@ -1,27 +1,34 @@
-# AgriTrust Protocol — Frontend
+# AgriTrust-Frontend
 
-Next.js web application for the AgriTrust Protocol: a decentralized agricultural trust fund management platform.
+Next.js web application for the AgriTrust Protocol, providing a decentralized dashboard for agricultural trust fund management, milestone tracking, and yield treasury analytics.
 
-## Features
+## 🚀 Key Features
+* **Trust Fund Dashboard:** Modern user interface for creating and managing trust funds and tracking participant status.
+* **Milestone & Proof Tracking:** Interactive timeline to submit and verify milestone completion proofs.
+* **Treasury Analytics:** Real-time visibility into yield-generating treasury positions and dispute resolution workflows.
 
-- **Trust Fund Management**: Dashboard for creating and managing agricultural trust funds
-- **Milestone Tracking**: Monitor milestone-based disbursement with proof verification
-- **Dispute Resolution**: Integrated dispute resolution system for trust fund participants
-- **Yield Treasury**: View and manage yield-generating treasury positions
-- **Cross-Chain**: Support for Stellar Soroban and Ethereum networks
+## 🛠️ Tech Stack
+* **Language/Framework:** Next.js (React) / TypeScript
+* **Key Dependencies:** `next`, `react`, `tailwindcss`
 
-## Tech Stack
+## 📦 Getting Started
 
-- [Next.js](https://nextjs.org/) — React framework
-- [TypeScript](https://www.typescriptlang.org/) — Type safety
-- [Tailwind CSS](https://tailwindcss.com/) — Styling
-- [Stellar Soroban](https://stellar.org/) — Smart contract integration
+### Prerequisites
+Ensure you have the required toolchains installed:
+* Node.js (v18 or higher recommended)
+* npm (Node Package Manager)
 
-## Getting Started
-
+### Installation & Local Setup
 ```bash
+# Clone the repository (if running manually)
+git clone https://github.com/AgriTrust-Protocol/AgriTrust-Frontend
+
+# Install dependencies or build
 npm install
+
+# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the app.
+## 🤝 Contributing
+Contributions are highly welcome. Please ensure your commits are cryptographically signed using GPG or SSH keys. For major structural changes, please open an issue first to discuss your proposal.
