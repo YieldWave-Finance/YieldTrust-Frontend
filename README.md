@@ -11,6 +11,17 @@ Next.js web application for the AgriTrust Protocol, providing a decentralized da
 * **Language/Framework:** Next.js (React) / TypeScript
 * **Key Dependencies:** `next`, `react`, `tailwindcss`
 
+## 🎨 Theming & Dark Mode
+The application uses Tailwind CSS v4 with a structured theme system configured in `app/globals.css`. It supports dark mode based on the user's system preferences (`prefers-color-scheme: dark`).
+
+### Available CSS Variables:
+- `--background`: The primary background color.
+- `--foreground`: The primary text color.
+- `--accent`: The primary accent color used for highlights and interactive elements.
+- `--accent-foreground`: The text color to be used on top of the accent color.
+
+These variables are mapped to Tailwind utility classes (e.g., `bg-background`, `text-accent`).
+
 ## 📦 Getting Started
 
 ### Prerequisites
