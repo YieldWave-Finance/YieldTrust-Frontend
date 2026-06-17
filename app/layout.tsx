@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -13,9 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YieldTrust — Decentralized Escrow & Grant Management",
+  title: "YieldTrust Dashboard",
   description:
-    "Dashboard for managing escrow accounts and grant distributions on Stellar Soroban.",
+    "YieldTrust — Decentralized escrow and grant management dashboard on Stellar Soroban. Manage grants, track escrow status, and monitor legal holds.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#2563eb",
 };
 
 export default function RootLayout({
