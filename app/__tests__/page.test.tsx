@@ -1,9 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import Home from "../page";
 
 beforeEach(() => {
   vi.restoreAllMocks();
+});
+
+afterEach(() => {
+  cleanup();
 });
 
 describe("Home page", () => {
@@ -64,6 +68,15 @@ describe("Home page", () => {
 
     render(<Home />);
 
+    expect(
+      await screen.findByRole("heading", {
+        name: "Escrow and grant oversight for accountable funding",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("How it works")).toBeInTheDocument();
+    expect(screen.getByText("Get started")).toBeInTheDocument();
+    expect(screen.getByText("Build on Stellar")).toBeInTheDocument();
+    expect(screen.getByText(/enforce legal holds/i)).toBeInTheDocument();
     expect(await screen.findByText("Test Escrow")).toBeInTheDocument();
     expect(await screen.findByText("Test Grant")).toBeInTheDocument();
   });

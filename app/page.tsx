@@ -3,6 +3,22 @@
 import { useEffect, useState } from "react";
 import { fetchDashboard } from "@/services/escrow";
 import type { DashboardData, EscrowRecord, GrantSummary } from "@/lib/types";
+import type { ReactNode } from "react";
+
+const onboardingSteps = [
+  {
+    title: "How it works",
+    copy: "Fund milestones into protected escrows, release payments only when obligations are met, and keep every grant movement visible from one dashboard.",
+  },
+  {
+    title: "Get started",
+    copy: "Create an escrow for a vendor, grantee, or beneficiary, define release conditions, and track funded, disputed, or released balances as work progresses.",
+  },
+  {
+    title: "Build on Stellar",
+    copy: "Use Stellar-ready settlement flows to support transparent grant distribution, fast payouts, and auditable records for field teams and fund managers.",
+  },
+];
 
 function EscrowTable({ escrows }: { escrows: EscrowRecord[] }) {
   if (escrows.length === 0) {
@@ -53,7 +69,7 @@ function GrantCard({ grant }: { grant: GrantSummary }) {
       : "100.0";
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
       <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{grant.name}</h3>
       <p className="mt-1 text-xs text-zinc-500">
         {grant.recipientCount} recipient{grant.recipientCount !== 1 ? "s" : ""}
@@ -131,40 +147,72 @@ export default function Home() {
     };
   }, [retryKey]);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error} onRetry={() => setRetryKey((k) => k + 1)} />;
-  if (!data) return null;
+  let dashboardContent: ReactNode = null;
+
+  if (loading) {
+    dashboardContent = <LoadingSkeleton />;
+  } else if (error) {
+    dashboardContent = (
+      <ErrorState message={error} onRetry={() => setRetryKey((k) => k + 1)} />
+    );
+  } else if (data) {
+    dashboardContent = (
+      <>
+        <section className="mt-12">
+          <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+            Active Escrows
+          </h2>
+          <EscrowTable escrows={data.escrows} />
+        </section>
+
+        <section className="mt-12">
+          <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+            Grant Programs
+          </h2>
+          {data.grants.length === 0 ? (
+            <p className="text-zinc-500">No grant programs yet.</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {data.grants.map((g) => (
+                <GrantCard key={g.id} grant={g} />
+              ))}
+            </div>
+          )}
+        </section>
+      </>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-12">
-      <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-        YieldTrust Dashboard
-      </h1>
-      <p className="mt-2 text-zinc-500">
-        Overview of escrow accounts and grant distributions.
-      </p>
+      <header className="max-w-3xl">
+        <p className="text-sm font-medium uppercase text-accent">YieldTrust onboarding</p>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Escrow and grant oversight for accountable funding
+        </h1>
+        <p className="mt-3 text-base leading-7 text-zinc-600 dark:text-zinc-400">
+          Protect project funds with milestone-based escrows, enforce legal holds when
+          disputes arise, and monitor grant tracking from allocation through distribution.
+        </p>
+      </header>
 
-      <section className="mt-12">
-        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          Active Escrows
-        </h2>
-        <EscrowTable escrows={data.escrows} />
+      <section className="mt-10 grid gap-4 md:grid-cols-3" aria-label="YieldTrust onboarding">
+        {onboardingSteps.map((step) => (
+          <article
+            key={step.title}
+            className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
+          >
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              {step.title}
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+              {step.copy}
+            </p>
+          </article>
+        ))}
       </section>
 
-      <section className="mt-12">
-        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          Grant Programs
-        </h2>
-        {data.grants.length === 0 ? (
-          <p className="text-zinc-500">No grant programs yet.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.grants.map((g) => (
-              <GrantCard key={g.id} grant={g} />
-            ))}
-          </div>
-        )}
-      </section>
+      {dashboardContent}
     </div>
   );
 }
