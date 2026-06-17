@@ -1,169 +1,137 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { fetchDashboard } from "@/services/escrow";
-import type { DashboardData, EscrowRecord, GrantSummary } from "@/lib/types";
+import { useState, useEffect } from "react";
 
-function EscrowTable({ escrows }: { escrows: EscrowRecord[] }) {
-  if (escrows.length === 0) {
-    return <p className="text-zinc-500">No escrow records yet.</p>;
-  }
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left">
-        <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-700">
-            <th className="py-2 pr-4 font-medium">Title</th>
-            <th className="py-2 pr-4 font-medium">Amount</th>
-            <th className="py-2 pr-4 font-medium">Status</th>
-            <th className="py-2 font-medium">Beneficiary</th>
-          </tr>
-        </thead>
-        <tbody>
-          {escrows.map((e) => (
-            <tr key={e.id} className="border-b border-zinc-100 dark:border-zinc-800">
-              <td className="py-2 pr-4">{e.title}</td>
-              <td className="py-2 pr-4">{e.amount}</td>
-              <td className="py-2 pr-4">
-                <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                    e.status === "released"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                      : e.status === "disputed"
-                        ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                        : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                  }`}
-                >
-                  {e.status}
-                </span>
-              </td>
-              <td className="py-2 font-mono text-xs">{e.beneficiary}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+interface Escrow {
+  id: string;
+  title: string;
+  amount: string;
+  status: string;
+  beneficiary: string;
+  createdAt: string;
 }
 
-function GrantCard({ grant }: { grant: GrantSummary }) {
-  const pct =
-    grant.active
-      ? ((Number(grant.totalDistributed) / Number(grant.totalAllocated)) * 100).toFixed(1)
-      : "100.0";
-
-  return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-      <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{grant.name}</h3>
-      <p className="mt-1 text-xs text-zinc-500">
-        {grant.recipientCount} recipient{grant.recipientCount !== 1 ? "s" : ""}
-      </p>
-      <div className="mt-3 flex items-center gap-2">
-        <div className="h-2 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-700">
-          <div
-            className="h-2 rounded-full bg-accent transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{pct}%</span>
-      </div>
-      <p className="mt-2 text-xs text-zinc-500">
-        {grant.totalDistributed} / {grant.totalAllocated}
-      </p>
-    </div>
-  );
+interface Grant {
+  id: string;
+  name: string;
+  totalAllocated: string;
+  totalDistributed: string;
+  recipientCount: number;
+  active: boolean;
 }
 
-function LoadingSkeleton() {
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-12 animate-pulse">
-      <div className="mb-8 h-8 w-48 rounded bg-zinc-200 dark:bg-zinc-700" />
-      <div className="mb-12 h-6 w-72 rounded bg-zinc-100 dark:bg-zinc-800" />
-      <div className="mb-8 h-6 w-32 rounded bg-zinc-200 dark:bg-zinc-700" />
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-12 rounded bg-zinc-100 dark:bg-zinc-800" />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
-  return (
-    <div className="mx-auto max-w-lg px-4 py-20 text-center">
-      <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
-        Unable to load dashboard
-      </p>
-      <p className="mt-2 text-sm text-zinc-500">{message}</p>
-      <button
-        onClick={onRetry}
-        type="button"
-        className="mt-6 rounded-full bg-accent px-6 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
-      >
-        Retry
-      </button>
-    </div>
-  );
+interface ApiData {
+  escrows: Escrow[];
+  grants: Grant[];
 }
 
 export default function Home() {
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState<ApiData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  async function fetchData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/data");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || `HTTP ${res.status}`);
+      }
+      const json: ApiData = await res.json();
+      setData(json);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    let cancelled = false;
-    void fetchDashboard().then((res) => {
-      if (cancelled) return;
-      if (res.error) {
-        setError(res.error);
-        setData(null);
-      } else {
-        setData(res.data);
-        setError(null);
-      }
-      setLoading(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [retryKey]);
+    fetchData();
+  }, []);
 
-  if (loading) return <LoadingSkeleton />;
-  if (error) return <ErrorState message={error} onRetry={() => setRetryKey((k) => k + 1)} />;
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-4 p-8">
+        <div className="h-8 w-48 rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-4 w-96 rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-4 w-80 rounded bg-zinc-200 dark:bg-zinc-700" />
+        <div className="h-32 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
+        <p className="text-lg text-red-600">Error: {error}</p>
+        <button
+          onClick={fetchData}
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   if (!data) return null;
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12">
-      <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-        YieldTrust Dashboard
-      </h1>
-      <p className="mt-2 text-zinc-500">
-        Overview of escrow accounts and grant distributions.
-      </p>
+    <div className="p-8">
+      <h1 className="mb-8 text-2xl font-bold">YieldTrust Dashboard</h1>
 
-      <section className="mt-12">
-        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          Active Escrows
-        </h2>
-        <EscrowTable escrows={data.escrows} />
+      <section className="mb-8">
+        <h2 className="mb-4 text-xl font-semibold">Active Grants</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {data.grants.map((grant) => (
+            <div
+              key={grant.id}
+              className="rounded-lg border p-4 shadow-sm"
+            >
+              <h3 className="font-medium">{grant.name}</h3>
+              <p className="text-sm text-zinc-600">
+                Allocated: ${Number(grant.totalAllocated).toLocaleString()}
+              </p>
+              <p className="text-sm text-zinc-600">
+                Distributed: ${Number(grant.totalDistributed).toLocaleString()}
+              </p>
+              <p className="text-sm text-zinc-600">
+                Recipients: {grant.recipientCount}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
 
-      <section className="mt-12">
-        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
-          Grant Programs
-        </h2>
-        {data.grants.length === 0 ? (
-          <p className="text-zinc-500">No grant programs yet.</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.grants.map((g) => (
-              <GrantCard key={g.id} grant={g} />
+      <section>
+        <h2 className="mb-4 text-xl font-semibold">Escrows</h2>
+        <table className="w-full table-auto border-collapse border border-zinc-300">
+          <thead>
+            <tr className="bg-zinc-100 dark:bg-zinc-800">
+              <th className="border border-zinc-300 px-4 py-2 text-left">Title</th>
+              <th className="border border-zinc-300 px-4 py-2 text-left">Amount</th>
+              <th className="border border-zinc-300 px-4 py-2 text-left">Status</th>
+              <th className="border border-zinc-300 px-4 py-2 text-left">Beneficiary</th>
+              <th className="border border-zinc-300 px-4 py-2 text-left">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.escrows.map((escrow) => (
+              <tr key={escrow.id}>
+                <td className="border border-zinc-300 px-4 py-2">{escrow.title}</td>
+                <td className="border border-zinc-300 px-4 py-2">
+                  ${Number(escrow.amount).toLocaleString()}
+                </td>
+                <td className="border border-zinc-300 px-4 py-2">{escrow.status}</td>
+                <td className="border border-zinc-300 px-4 py-2">{escrow.beneficiary}</td>
+                <td className="border border-zinc-300 px-4 py-2">{escrow.createdAt}</td>
+              </tr>
             ))}
-          </div>
-        )}
+          </tbody>
+        </table>
       </section>
     </div>
   );
