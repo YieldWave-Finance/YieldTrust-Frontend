@@ -1,65 +1,170 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState } from "react";
+import { fetchDashboard } from "@/services/escrow";
+import type { DashboardData, EscrowRecord, GrantSummary } from "@/lib/types";
+
+function EscrowTable({ escrows }: { escrows: EscrowRecord[] }) {
+  if (escrows.length === 0) {
+    return <p className="text-zinc-500">No escrow records yet.</p>;
+  }
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-sm text-left">
+        <thead>
+          <tr className="border-b border-zinc-200 dark:border-zinc-700">
+            <th className="py-2 pr-4 font-medium">Title</th>
+            <th className="py-2 pr-4 font-medium">Amount</th>
+            <th className="py-2 pr-4 font-medium">Status</th>
+            <th className="py-2 font-medium">Beneficiary</th>
+          </tr>
+        </thead>
+        <tbody>
+          {escrows.map((e) => (
+            <tr key={e.id} className="border-b border-zinc-100 dark:border-zinc-800">
+              <td className="py-2 pr-4">{e.title}</td>
+              <td className="py-2 pr-4">{e.amount}</td>
+              <td className="py-2 pr-4">
+                <span
+                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                    e.status === "released"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                      : e.status === "disputed"
+                        ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                        : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+                  }`}
+                >
+                  {e.status}
+                </span>
+              </td>
+              <td className="py-2 font-mono text-xs">{e.beneficiary}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function GrantCard({ grant }: { grant: GrantSummary }) {
+  const pct =
+    grant.active
+      ? ((Number(grant.totalDistributed) / Number(grant.totalAllocated)) * 100).toFixed(1)
+      : "100.0";
+
+  return (
+    <div className="rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
+      <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{grant.name}</h3>
+      <p className="mt-1 text-xs text-zinc-500">
+        {grant.recipientCount} recipient{grant.recipientCount !== 1 ? "s" : ""}
+      </p>
+      <div className="mt-3 flex items-center gap-2">
+        <div className="h-2 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-700">
+          <div
+            className="h-2 rounded-full bg-accent transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{pct}%</span>
+      </div>
+      <p className="mt-2 text-xs text-zinc-500">
+        {grant.totalDistributed} / {grant.totalAllocated}
+      </p>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-12 animate-pulse">
+      <div className="mb-8 h-8 w-48 rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="mb-12 h-6 w-72 rounded bg-zinc-100 dark:bg-zinc-800" />
+      <div className="mb-8 h-6 w-32 rounded bg-zinc-200 dark:bg-zinc-700" />
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-12 rounded bg-zinc-100 dark:bg-zinc-800" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div className="mx-auto max-w-lg px-4 py-20 text-center">
+      <p className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+        Unable to load dashboard
+      </p>
+      <p className="mt-2 text-sm text-zinc-500">{message}</p>
+      <button
+        onClick={onRetry}
+        type="button"
+        className="mt-6 rounded-full bg-accent px-6 py-2 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90"
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetchDashboard().then((res) => {
+      if (cancelled) return;
+      if (res.error) {
+        setError(res.error);
+        setData(null);
+      } else {
+        setData(res.data);
+        setError(null);
+      }
+      setLoading(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
+
+  if (loading) return <LoadingSkeleton />;
+  if (error) return <ErrorState message={error} onRetry={() => setRetryKey((k) => k + 1)} />;
+  if (!data) return null;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+    <div className="mx-auto max-w-5xl px-4 py-12">
+      <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+        YieldTrust Dashboard
+      </h1>
+      <p className="mt-2 text-zinc-500">
+        Overview of escrow accounts and grant distributions.
+      </p>
+
+      <section className="mt-12">
+        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+          Active Escrows
+        </h2>
+        <EscrowTable escrows={data.escrows} />
+      </section>
+
+      <section className="mt-12">
+        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+          Grant Programs
+        </h2>
+        {data.grants.length === 0 ? (
+          <p className="text-zinc-500">No grant programs yet.</p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {data.grants.map((g) => (
+              <GrantCard key={g.id} grant={g} />
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
