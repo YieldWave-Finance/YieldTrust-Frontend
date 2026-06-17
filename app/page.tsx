@@ -29,28 +29,33 @@ export default function Home() {
   const [data, setData] = useState<ApiData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-
-  async function fetchData() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/data");
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `HTTP ${res.status}`);
-      }
-      const json: ApiData = await res.json();
-      setData(json);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    let cancelled = false;
+
+    fetch("/api/data")
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body.error || `HTTP ${res.status}`);
+        }
+        return res.json() as Promise<ApiData>;
+      })
+      .then((json) => {
+        if (!cancelled) setData(json);
+      })
+      .catch((e) => {
+        if (!cancelled) setError(e instanceof Error ? e.message : "Unknown error");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [retryKey]);
 
   if (loading) {
     return (
@@ -68,7 +73,7 @@ export default function Home() {
       <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8">
         <p className="text-lg text-red-600">Error: {error}</p>
         <button
-          onClick={fetchData}
+          onClick={() => setRetryKey((k) => k + 1)}
           className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           Retry
