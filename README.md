@@ -26,20 +26,39 @@ These variables are mapped to Tailwind utility classes (e.g., `bg-background`, `
 
 ### Prerequisites
 Ensure you have the required toolchains installed:
-* Node.js (v18 or higher recommended)
-* npm (Node Package Manager)
+* Node.js **v20.19.0 or v22.x** (see `engines` field in `package.json`)
+* npm (bundled with Node.js)
 
 ### Installation & Local Setup
 ```bash
 # Clone the repository (if running manually)
 git clone https://github.com/AgriTrust-Protocol/AgriTrust-Frontend
 
-# Install dependencies or build
-npm install
+# Install exact dependency versions from the lock file
+npm ci
 
 # Start development server
 npm run dev
 ```
+### Dependency Auditing
+Run a security audit before deploying or after adding new packages:
+
+```bash
+# Report vulnerabilities at high severity and above
+npm audit --audit-level=high
+
+# Interactive fix for auto-resolvable issues
+npm audit fix
+```
+
+### Full CI Check Locally
+Run the same checks the CI pipeline runs, all in one command:
+
+```bash
+npm run ci
+```
+
+This executes `npm ci && npm run lint && npm run build` in sequence.
 
 ## 🤝 Contributing
 Contributions are highly welcome. Please ensure your commits are cryptographically signed using GPG or SSH keys. For major structural changes, please open an issue first to discuss your proposal.
