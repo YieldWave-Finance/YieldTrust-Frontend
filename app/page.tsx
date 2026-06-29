@@ -51,12 +51,15 @@ function EscrowTable({ escrows }: { escrows: Escrow[] }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
+        <caption className="sr-only">
+          Active escrow records with title, amount, status, and beneficiary.
+        </caption>
         <thead>
           <tr className="border-b border-zinc-200 dark:border-zinc-700">
-            <th className="py-2 pr-4 font-medium">Title</th>
-            <th className="py-2 pr-4 font-medium">Amount</th>
-            <th className="py-2 pr-4 font-medium">Status</th>
-            <th className="py-2 font-medium">Beneficiary</th>
+            <th scope="col" className="py-2 pr-4 font-medium">Title</th>
+            <th scope="col" className="py-2 pr-4 font-medium">Amount</th>
+            <th scope="col" className="py-2 pr-4 font-medium">Status</th>
+            <th scope="col" className="py-2 font-medium">Beneficiary</th>
           </tr>
         </thead>
         <tbody>
@@ -152,37 +155,55 @@ export default function Home() {
 
   if (loading) {
     dashboardContent = (
-      <div className="animate-pulse space-y-4 py-8">
+      <section
+        aria-label="Dashboard loading"
+        aria-live="polite"
+        className="animate-pulse space-y-4 py-8"
+        role="status"
+      >
+        <span className="sr-only">Loading dashboard data.</span>
         <div className="h-8 w-48 rounded bg-zinc-200 dark:bg-zinc-700" />
         <div className="h-4 w-96 rounded bg-zinc-200 dark:bg-zinc-700" />
         <div className="h-4 w-80 rounded bg-zinc-200 dark:bg-zinc-700" />
         <div className="h-32 w-full rounded bg-zinc-200 dark:bg-zinc-700" />
-      </div>
+      </section>
     );
   } else if (error) {
     dashboardContent = (
-      <div className="flex flex-col items-center justify-center gap-4 py-8">
-        <p className="text-lg text-red-600">Error: {error}</p>
+      <section
+        aria-labelledby="dashboard-error-heading"
+        className="flex flex-col items-center justify-center gap-4 py-8"
+        role="alert"
+      >
+        <h2 id="dashboard-error-heading" className="text-lg text-red-600">
+          Error: {error}
+        </h2>
         <button
           onClick={() => setRetryKey((k) => k + 1)}
           className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           Retry
         </button>
-      </div>
+      </section>
     );
   } else if (data) {
     dashboardContent = (
       <>
-        <section className="mt-12">
-          <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+        <section aria-labelledby="active-escrows-heading" className="mt-12">
+          <h2
+            id="active-escrows-heading"
+            className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200"
+          >
             Active Escrows
           </h2>
           <EscrowTable escrows={data.escrows} />
         </section>
 
-        <section className="mt-12">
-          <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">
+        <section aria-labelledby="grant-programs-heading" className="mt-12">
+          <h2
+            id="grant-programs-heading"
+            className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200"
+          >
             Grant Programs
           </h2>
           {data.grants.length === 0 ? (
@@ -200,12 +221,65 @@ export default function Home() {
   }
 
   return (
-    <div className="p-8 mx-auto max-w-7xl">
-      <h1 className="mb-8 text-3xl font-bold text-zinc-900 dark:text-zinc-100">Dashboard</h1>
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <header className="max-w-3xl mb-12">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Image
+              src={vercelLogo}
+              alt=""
+              aria-hidden="true"
+              width={1155}
+              height={1000}
+              className="h-6 w-6 dark:invert"
+              unoptimized
+            />
+            <span className="text-sm font-medium uppercase text-accent">YieldTrust onboarding</span>
+          </div>
+          <Image
+            src={nextLogo}
+            alt=""
+            aria-hidden="true"
+            width={394}
+            height={80}
+            className="h-4 dark:invert"
+            priority
+            unoptimized
+          />
+        </div>
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          Escrow and grant oversight for accountable funding
+        </h1>
+        <p className="mt-3 text-base leading-7 text-zinc-600 dark:text-zinc-400">
+          Protect project funds with milestone-based escrows, enforce legal holds when
+          disputes arise, and monitor grant tracking from allocation through distribution.
+        </p>
+      </header>
 
-      <section className="mb-8">
+      <section className="mb-12" aria-labelledby="onboarding-heading">
+        <h2 id="onboarding-heading" className="sr-only">
+          YieldTrust onboarding
+        </h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {onboardingSteps.map((step) => (
+            <article
+              key={step.title}
+              className="rounded-lg border border-zinc-200 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900"
+            >
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                {step.title}
+              </h3>
+              <p className="mt-2 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                {step.copy}
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="mb-12">
         <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">Overview</h2>
-        <div className="grid gap-4 sm:grid-cols-3 mb-8">
+        <div className="grid gap-4 sm:grid-cols-3">
           {/* Active Grants Placeholder Card */}
           <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between">
             <div>
@@ -236,6 +310,10 @@ export default function Home() {
       </section>
 
       {dashboardContent}
-    </div>
+
+      <footer className="mt-12 border-t border-zinc-200 pt-6 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+        <p>YieldTrust escrow and grant oversight dashboard.</p>
+      </footer>
+    </main>
   );
 }
