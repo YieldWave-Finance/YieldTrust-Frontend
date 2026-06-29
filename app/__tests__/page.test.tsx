@@ -70,13 +70,13 @@ describe("Home page", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Escrow and grant oversight for accountable funding",
+        name: "Dashboard",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("How it works")).toBeInTheDocument();
-    expect(screen.getByText("Get started")).toBeInTheDocument();
-    expect(screen.getByText("Build on Stellar")).toBeInTheDocument();
-    expect(screen.getByText(/enforce legal holds/i)).toBeInTheDocument();
+    expect(screen.getByText("Overview")).toBeInTheDocument();
+    expect(screen.getByText("Active Grants")).toBeInTheDocument();
+    expect(screen.getByText("Escrows")).toBeInTheDocument();
+    expect(screen.getByText(/Total Active Grants/i)).toBeInTheDocument();
     expect(await screen.findByText("Test Escrow")).toBeInTheDocument();
     expect(await screen.findByText("Test Grant")).toBeInTheDocument();
   });
