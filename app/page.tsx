@@ -221,8 +221,8 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-12">
-      <header className="max-w-3xl">
+    <main className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <header className="max-w-3xl mb-12">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Image
@@ -256,7 +256,7 @@ export default function Home() {
         </p>
       </header>
 
-      <section className="mt-10" aria-labelledby="onboarding-heading">
+      <section className="mb-12" aria-labelledby="onboarding-heading">
         <h2 id="onboarding-heading" className="sr-only">
           YieldTrust onboarding
         </h2>
@@ -274,6 +274,38 @@ export default function Home() {
               </p>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <h2 className="mb-4 text-xl font-semibold text-zinc-800 dark:text-zinc-200">Overview</h2>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {/* Active Grants Placeholder Card */}
+          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Total Active Grants</h3>
+              <p className="mt-2 text-3xl font-bold text-blue-600 dark:text-blue-400">{data?.grants?.length || 0}</p>
+            </div>
+            <p className="mt-4 text-sm text-green-600 dark:text-green-400">Stable allocation</p>
+          </div>
+
+          {/* Legal Hold Status Placeholder Card */}
+          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Legal Hold Status</h3>
+              <p className="mt-2 text-3xl font-bold text-yellow-600 dark:text-yellow-400">0</p>
+            </div>
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">Accounts restricted</p>
+          </div>
+
+          {/* Treasury Analytics Placeholder Card */}
+          <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Treasury Balance</h3>
+              <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">$1,250,000</p>
+            </div>
+            <p className="mt-4 text-sm text-green-600 dark:text-green-400">+5.2% from last month</p>
+          </div>
         </div>
       </section>
 
