@@ -5,24 +5,10 @@ import Image from "next/image";
 import type { ReactNode } from "react";
 import nextLogo from "@/public/next.svg";
 import vercelLogo from "@/public/vercel.svg";
-
-interface Escrow {
-  id: string;
-  title: string;
-  amount: string;
-  status: string;
-  beneficiary: string;
-  createdAt: string;
-}
-
-interface Grant {
-  id: string;
-  name: string;
-  totalAllocated: string;
-  totalDistributed: string;
-  recipientCount: number;
-  active: boolean;
-}
+import EscrowTable from "./components/EscrowTable";
+import type { Escrow } from "./components/EscrowTable";
+import GrantCard from "./components/GrantCard";
+import type { Grant } from "./components/GrantCard";
 
 interface ApiData {
   escrows: Escrow[];
@@ -43,81 +29,6 @@ const onboardingSteps = [
     copy: "Use Stellar-ready settlement flows to support transparent grant distribution, fast payouts, and auditable records for field teams and fund managers.",
   },
 ];
-
-function EscrowTable({ escrows }: { escrows: Escrow[] }) {
-  if (escrows.length === 0) {
-    return <p className="text-zinc-500">No escrow records yet.</p>;
-  }
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left">
-        <caption className="sr-only">
-          Active escrow records with title, amount, status, and beneficiary.
-        </caption>
-        <thead>
-          <tr className="border-b border-zinc-200 dark:border-zinc-700">
-            <th scope="col" className="py-2 pr-4 font-medium">Title</th>
-            <th scope="col" className="py-2 pr-4 font-medium">Amount</th>
-            <th scope="col" className="py-2 pr-4 font-medium">Status</th>
-            <th scope="col" className="py-2 font-medium">Beneficiary</th>
-          </tr>
-        </thead>
-        <tbody>
-          {escrows.map((e) => (
-            <tr key={e.id} className="border-b border-zinc-100 dark:border-zinc-800">
-              <td className="py-2 pr-4">{e.title}</td>
-              <td className="py-2 pr-4">
-                ${Number(e.amount).toLocaleString()}
-              </td>
-              <td className="py-2 pr-4">
-                <span
-                  className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                    e.status === "released"
-                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                      : e.status === "disputed"
-                        ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                        : "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                  }`}
-                >
-                  {e.status}
-                </span>
-              </td>
-              <td className="py-2 font-mono text-xs">{e.beneficiary}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function GrantCard({ grant }: { grant: Grant }) {
-  const pct =
-    grant.active
-      ? ((Number(grant.totalDistributed) / Number(grant.totalAllocated)) * 100).toFixed(1)
-      : "100.0";
-
-  return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-700 dark:bg-zinc-900">
-      <h3 className="font-medium text-zinc-900 dark:text-zinc-100">{grant.name}</h3>
-      <p className="mt-1 text-xs text-zinc-500">
-        {grant.recipientCount} recipient{grant.recipientCount !== 1 ? "s" : ""}
-      </p>
-      <div className="mt-3 flex items-center gap-2">
-        <div className="h-2 flex-1 rounded-full bg-zinc-200 dark:bg-zinc-700">
-          <div
-            className="h-2 rounded-full bg-accent transition-all"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-        <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">{pct}%</span>
-      </div>
-      <p className="mt-2 text-xs text-zinc-500">
-        ${Number(grant.totalDistributed).toLocaleString()} / ${Number(grant.totalAllocated).toLocaleString()}
-      </p>
-    </div>
-  );
-}
 
 export default function Home() {
   const [data, setData] = useState<ApiData | null>(null);

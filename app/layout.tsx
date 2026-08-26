@@ -25,6 +25,7 @@ export const viewport: Viewport = {
 };
 
 import Header from "./components/Header";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 export default function RootLayout({
   children,
@@ -37,7 +38,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
         <Header />
-        <main>{children}</main>
+        <ErrorBoundary>
+          <main>{children}</main>
+        </ErrorBoundary>
       </body>
     </html>
   );
