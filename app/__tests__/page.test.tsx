@@ -68,16 +68,15 @@ describe("Home page", () => {
 
     render(<Home />);
 
+    // Escrow table + grant cards are only rendered once the dashboard data
+    // has finished loading, so we wait for a stable success-state heading.
     expect(
-      await screen.findByRole("heading", {
-        name: "Dashboard",
-      }),
+      await screen.findByRole("heading", { name: "Active Escrows" }),
     ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Grant Programs" })).toBeInTheDocument();
     expect(screen.getByText("Overview")).toBeInTheDocument();
-    expect(screen.getByText("Active Grants")).toBeInTheDocument();
-    expect(screen.getByText("Escrows")).toBeInTheDocument();
     expect(screen.getByText(/Total Active Grants/i)).toBeInTheDocument();
-    expect(await screen.findByText("Test Escrow")).toBeInTheDocument();
-    expect(await screen.findByText("Test Grant")).toBeInTheDocument();
+    expect(screen.getByText("Test Escrow")).toBeInTheDocument();
+    expect(screen.getByText("Test Grant")).toBeInTheDocument();
   });
 });
